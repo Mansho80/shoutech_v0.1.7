@@ -1,0 +1,45 @@
+﻿# ===== Build outputs =====
+bin/
+obj/
+bld/
+publish/
+artifacts/
+
+# ===== NuGet =====
+packages/
+*.nupkg
+*.snupkg
+
+# ===== Visual Studio =====
+.vs/
+*.user
+*.suo
+*.userprefs
+
+# ===== Logs =====
+log/
+logs/
+*.log
+
+# ===== Runtime / temp =====
+*.bak
+*.tmp
+*.temp
+
+# ===== OS =====
+Thumbs.db
+desktop.ini
+.DS_Store
+
+# ===== Secrets =====
+.env
+*.env
+secrets.json
+*.pfx
+*.key
+
+# ===== Databases محلية =====
+*.db
+*.sqlite
+*.mdf
+*.ldf

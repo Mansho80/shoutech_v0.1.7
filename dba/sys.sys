@@ -1,0 +1,17 @@
+-- ═════════════════════════════════════════════════════════════════════════════════
+-- FILE: dba/sys.sys
+-- SYSTEM: ShouTech ERP Enterprise Core
+-- MODULE: System · Settings · Tax · UOM · Nav · Notifications · Delivery · Custom Fields
+-- GRADE: Enterprise Production Standard (Tier-1)
+-- ═════════════════════════════════════════════════════════════════════════════════
+
+:r sys/sys.sql
+:r sys/sett.sql
+:r sys/seq.sql
+:r sys/tax.sql
+:r sys/uom.sql
+:r sys/nav.sql
+:r sys/noti.sql
+:r sys/cfield.sql
+:r sys/deliv.sql
+GO

@@ -1,0 +1,15 @@
+-- ═════════════════════════════════════════════════════════════════════════════════
+-- FILE: dba/crm.sys
+-- SYSTEM: ShouTech ERP Enterprise Core
+-- MODULE: CRM · Customers · Leads · Prices · Orders · Sales Reps · Contacts
+-- GRADE: Enterprise Production Standard (Tier-1)
+-- ═════════════════════════════════════════════════════════════════════════════════
+
+:r crm/crm.sql
+:r crm/cust.sql
+:r crm/cont.sql
+:r crm/lead.sql
+:r crm/price.sql
+:r crm/ord.sql
+:r crm/rep.sql
+GO

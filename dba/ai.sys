@@ -1,0 +1,11 @@
+-- ═════════════════════════════════════════════════════════════════════════════════
+-- FILE: dba/ai.sys
+-- SYSTEM: ShouTech ERP Enterprise Core
+-- MODULE: AI · Models · Predictions · Anomalies (Offline-ready)
+-- GRADE: Enterprise Production Standard (Tier-1)
+-- ═════════════════════════════════════════════════════════════════════════════════
+
+:r ai/model.sql
+:r ai/pred.sql
+:r ai/anom.sql
+GO

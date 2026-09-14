@@ -1,0 +1,18 @@
+-- ═════════════════════════════════════════════════════════════════════════════════
+-- FILE: dba/sds.sys
+-- SYSTEM: ShouTech ERP Enterprise Core
+-- MODULE: Reference Seed (Catalog only — no invoices/vouchers/employees demo)
+-- GRADE: Enterprise Production Standard (Tier-1)
+-- ═════════════════════════════════════════════════════════════════════════════════
+
+:r sds/sds_sys.sql
+:r sds/su_sds_coa.sql
+:r sds/sy_sds_coa.sql
+:r sds/sds_fin.sql
+:r sds/sds_inv.sql
+:r sds/sds_crm.sql
+:r sds/sds_pos.sql
+:r sds/sds_hr.sql
+:r sds/sds_mfg.sql
+:r sds/sds_nav.sql
+GO

@@ -1,0 +1,11 @@
+-- ═════════════════════════════════════════════════════════════════════════════════
+-- FILE: dba/aud.sys
+-- SYSTEM: ShouTech ERP Enterprise Core
+-- MODULE: Audit · Approval · Retention
+-- GRADE: Enterprise Production Standard (Tier-1)
+-- ═════════════════════════════════════════════════════════════════════════════════
+
+:r aud/log.sql
+:r aud/appr.sql
+:r aud/retn.sql
+GO

@@ -1,0 +1,11 @@
+-- ═════════════════════════════════════════════════════════════════════════════════
+-- FILE: dba/pos.sys
+-- SYSTEM: ShouTech ERP Enterprise Core
+-- MODULE: Point of Sale · Terminals · Transactions · Shifts
+-- GRADE: Enterprise Production Standard (Tier-1)
+-- ═════════════════════════════════════════════════════════════════════════════════
+
+:r pos/pos.sql
+:r pos/pos_trns.sql
+:r pos/shift.sql
+GO

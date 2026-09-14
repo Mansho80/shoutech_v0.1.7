@@ -1,0 +1,13 @@
+-- ═════════════════════════════════════════════════════════════════════════════════
+-- FILE: dba/hr.sys
+-- SYSTEM: ShouTech ERP Enterprise Core
+-- MODULE: HR · Employees · Attendance · Leave · Payroll
+-- GRADE: Enterprise Production Standard (Tier-1)
+-- ═════════════════════════════════════════════════════════════════════════════════
+
+:r hr/hr.sql
+:r hr/emp.sql
+:r hr/att.sql
+:r hr/leave.sql
+:r hr/payr.sql
+GO

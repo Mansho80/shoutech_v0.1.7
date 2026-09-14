@@ -1,0 +1,14 @@
+-- ═════════════════════════════════════════════════════════════════════════════════
+-- FILE: dba/mst.sys
+-- SYSTEM: ShouTech ERP Enterprise Core
+-- MODULE: Master · Identity · License · Shared Procedures
+-- GRADE: Enterprise Production Standard (Tier-1)
+-- ═════════════════════════════════════════════════════════════════════════════════
+-- Run from dba/ :  sqlcmd ... -i mst.sys
+
+:r mst/mst.sql
+:r mst/usr.sql
+:r mst/lic.sql
+:r mst/aud.sql
+:r mst/proc.sql
+GO

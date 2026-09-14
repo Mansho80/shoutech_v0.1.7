@@ -1,0 +1,12 @@
+-- ═════════════════════════════════════════════════════════════════════════════════
+-- FILE: dba/sec.sys
+-- SYSTEM: ShouTech ERP Enterprise Core
+-- MODULE: Security & Licensing (RBAC / License)
+-- GRADE: Enterprise Production Standard (Tier-1)
+-- ═════════════════════════════════════════════════════════════════════════════════
+-- Identity & license objects live under mst/ (short names). Included here for
+-- install.sys ordering clarity; safe if already applied via mst.sys (IF NOT EXISTS).
+
+:r mst/usr.sql
+:r mst/lic.sql
+GO

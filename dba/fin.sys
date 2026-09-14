@@ -1,0 +1,18 @@
+-- ═════════════════════════════════════════════════════════════════════════════════
+-- FILE: dba/fin.sys
+-- SYSTEM: ShouTech ERP Enterprise Core
+-- MODULE: Finance · GL · COA · Payments · Banks · Checks · Installments · Assets · Reports
+-- GRADE: Enterprise Production Standard (Tier-1)
+-- ═════════════════════════════════════════════════════════════════════════════════
+
+:r fin/coa.sql
+:r fin/gl.sql
+:r fin/fin.sql
+:r fin/inv.sql
+:r fin/pay.sql
+:r fin/bank.sql
+:r fin/chq.sql
+:r fin/inst.sql
+:r fin/fin_asst.sql
+:r fin/rpt.sql
+GO

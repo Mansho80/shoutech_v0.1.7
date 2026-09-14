@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{00000000-0000-0000-0000-000000000000}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>SecEng</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup>
+    <OutDir>$(SolutionDir)bin\$(Configuration)\</OutDir>
+  </PropertyGroup>
+  <ItemGroup>
+    <ClCompile Include="..\src\prot.cpp" />
+    <ClCompile Include="..\src\ciph.cpp" />
+    <ClInclude Include="..\inc\sec.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+</Project>
+// Path: sec\bin\.gitkeep
+// Language: Build Output
+// Description: مخرجات الـ DLL المترجمة توضع هنا.
+======================================================================
+
+SHOUTECH ERP V9 - Enterprise System
+Tech Stack:
+  - C# .NET 9 (UI + Business Logic)
+  - C++ 20 (Security Engine)
+  - Python 3.12 FastAPI (AI)
+  - SQL Server 2022
+  - Dapper ORM
+  - FastReport .NET
+
+Architecture Principles:
+1. Security: Dongle mandatory via PROT.dll
+2. Backup: 10 local (FIFO) + 3 cloud encrypted
+3. Data: Isolated DB per Year via MST.sys
+4. AI: Local FastAPI (localhost:5050)
+5. Sync: Windows Service background worker
+6. Migration: SQL versioning in DBA/Migrations/

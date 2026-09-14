@@ -1,0 +1,91 @@
+-- ═════════════════════════════════════════════════════════════════════════════════
+-- FILE: dba/install.sys
+-- SYSTEM: ShouTech ERP Enterprise Core
+-- PURPOSE: Master deployment orchestrator (schema modules in dependency order)
+-- GRADE: Enterprise Production Standard (Tier-1)
+-- ═════════════════════════════════════════════════════════════════════════════════
+-- USAGE (from dba/ folder):
+--   sqlcmd -S localhost -d SHOUTECH_MST -E -b -i install.sys
+--
+-- ORDER:
+--   1) Master / Security
+--   2) System core (tax, uom, nav, settings)
+--   3) Audit
+--   4) Finance
+--   5) Inventory
+--   6) CRM
+--   7) POS
+--   8) HR
+--   9) Manufacturing
+--  10) AI
+--  11) Reference catalog (sds) — optional structure defaults
+--  12) Post-deployment (FKs / hardening)
+--
+-- No operational sample invoices/vouchers are deployed here.
+-- ═════════════════════════════════════════════════════════════════════════════════
+
+SET NOCOUNT ON;
+SET XACT_ABORT ON;
+GO
+
+PRINT N'═══════════════════════════════════════════════════════════════════════════';
+PRINT N'🚀 SHOUTECH ERP — Enterprise install.sys starting...';
+PRINT N'═══════════════════════════════════════════════════════════════════════════';
+GO
+
+PRINT N'[1/12] Master...';
+:r mst.sys
+GO
+
+PRINT N'[2/12] Security...';
+:r sec.sys
+GO
+
+PRINT N'[3/12] System...';
+:r sys.sys
+GO
+
+PRINT N'[4/12] Audit...';
+:r aud.sys
+GO
+
+PRINT N'[5/12] Finance...';
+:r fin.sys
+GO
+
+PRINT N'[6/12] Inventory...';
+:r inv.sys
+GO
+
+PRINT N'[7/12] CRM...';
+:r crm.sys
+GO
+
+PRINT N'[8/12] POS...';
+:r pos.sys
+GO
+
+PRINT N'[9/12] HR...';
+:r hr.sys
+GO
+
+PRINT N'[10/12] Manufacturing...';
+:r mfg.sys
+GO
+
+PRINT N'[11/12] AI...';
+:r ai.sys
+GO
+
+PRINT N'[12/12] Reference catalog (sds)...';
+:r sds.sys
+GO
+
+PRINT N'[POST] Post-deployment...';
+:r post/post.sql
+GO
+
+PRINT N'═══════════════════════════════════════════════════════════════════════════';
+PRINT N'✅ SHOUTECH ERP — install.sys completed.';
+PRINT N'═══════════════════════════════════════════════════════════════════════════';
+GO

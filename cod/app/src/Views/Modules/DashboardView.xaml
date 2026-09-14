@@ -1,0 +1,69 @@
+<UserControl x:Class="ShouTech.App.Views.Modules.DashboardView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"
+             d:DesignHeight="500" d:DesignWidth="900">
+    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="24">
+        <StackPanel>
+            <TextBlock Text="🏢"
+                       FontSize="56"
+                       HorizontalAlignment="Center"/>
+            <TextBlock Text="شو تيك لإدارة المؤسسات"
+                       FontSize="28"
+                       FontWeight="Bold"
+                       Foreground="{DynamicResource TextBrush}"
+                       HorizontalAlignment="Center"
+                       Margin="0,12,0,4"/>
+            <TextBlock Text="SHOUTECH ERP V10 — Enterprise Edition"
+                       FontSize="16"
+                       Foreground="{DynamicResource TextSecondaryBrush}"
+                       HorizontalAlignment="Center"/>
+            <TextBlock Text="اختر أحد التبويبات من شريط القوائم للبدء"
+                       FontSize="14"
+                       Foreground="{DynamicResource TextTertiaryBrush}"
+                       HorizontalAlignment="Center"
+                       Margin="0,8,0,24"/>
+
+            <UniformGrid Columns="3" Margin="0,0,0,16">
+                <Border Background="{DynamicResource ModuleCardBackgroundBrush}"
+                        BorderBrush="{DynamicResource ModuleCardBorderBrush}"
+                        BorderThickness="1"
+                        CornerRadius="8"
+                        Padding="20"
+                        Margin="6">
+                    <StackPanel>
+                        <TextBlock Text="👥 العملاء" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="13"/>
+                        <TextBlock x:Name="CustomersCount" Text="—" FontSize="28" FontWeight="Bold"
+                                   Foreground="{DynamicResource PrimaryBrush}" Margin="0,8,0,0"/>
+                    </StackPanel>
+                </Border>
+                <Border Background="{DynamicResource ModuleCardBackgroundBrush}"
+                        BorderBrush="{DynamicResource ModuleCardBorderBrush}"
+                        BorderThickness="1"
+                        CornerRadius="8"
+                        Padding="20"
+                        Margin="6">
+                    <StackPanel>
+                        <TextBlock Text="📦 المنتجات" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="13"/>
+                        <TextBlock x:Name="ProductsCount" Text="—" FontSize="28" FontWeight="Bold"
+                                   Foreground="{DynamicResource SecondaryBrush}" Margin="0,8,0,0"/>
+                    </StackPanel>
+                </Border>
+                <Border Background="{DynamicResource ModuleCardBackgroundBrush}"
+                        BorderBrush="{DynamicResource ModuleCardBorderBrush}"
+                        BorderThickness="1"
+                        CornerRadius="8"
+                        Padding="20"
+                        Margin="6">
+                    <StackPanel>
+                        <TextBlock Text="⏳ موافقات معلقة" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="13"/>
+                        <TextBlock x:Name="PendingCount" Text="—" FontSize="28" FontWeight="Bold"
+                                   Foreground="{DynamicResource WarningBrush}" Margin="0,8,0,0"/>
+                    </StackPanel>
+                </Border>
+            </UniformGrid>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

@@ -1,0 +1,14 @@
+-- ═════════════════════════════════════════════════════════════════════════════════
+-- FILE: dba/inv.sys
+-- SYSTEM: ShouTech ERP Enterprise Core
+-- MODULE: Inventory · Products · Warehouses · Stock · Movements · Valuation
+-- GRADE: Enterprise Production Standard (Tier-1)
+-- ═════════════════════════════════════════════════════════════════════════════════
+
+:r inv/prod.sql
+:r inv/wh.sql
+:r inv/inv.sql
+:r inv/stock.sql
+:r inv/move.sql
+:r inv/val.sql
+GO

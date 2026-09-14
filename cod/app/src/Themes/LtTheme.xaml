@@ -1,0 +1,44 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:sys="clr-namespace:System;assembly=mscorlib">
+    <sys:String x:Key="ThemeName">Light</sys:String>
+
+    <!-- Core surfaces -->
+    <SolidColorBrush x:Key="BackgroundBrush" Color="#F5F5F5"/>
+    <SolidColorBrush x:Key="SurfaceBrush" Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="SurfaceLightBrush" Color="#FAFAFA"/>
+    <SolidColorBrush x:Key="SurfaceDarkBrush" Color="#E8E8E8"/>
+    <SolidColorBrush x:Key="SurfaceLighterBrush" Color="#FFFFFF"/>
+
+    <!-- Shell (MWin) -->
+    <SolidColorBrush x:Key="ShellBackgroundBrush" Color="#EEF1F5"/>
+    <SolidColorBrush x:Key="ShellMenuBackgroundBrush" Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="ShellMenuForegroundBrush" Color="#000000"/>
+    <SolidColorBrush x:Key="ShellToolbarBackgroundBrush" Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="ShellRibbonBackgroundBrush" Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="ShellRibbonForegroundBrush" Color="#000000"/>
+    <SolidColorBrush x:Key="ShellRibbonBorderBrush" Color="#D7DEE8"/>
+    <SolidColorBrush x:Key="ShellRibbonHoverBrush" Color="#EAF1FF"/>
+    <SolidColorBrush x:Key="ShellContentBackgroundBrush" Color="#F7F9FC"/>
+    <SolidColorBrush x:Key="ShellContentBorderBrush" Color="#D9E0EA"/>
+    <SolidColorBrush x:Key="ShellStatusBarBackgroundBrush" Color="#0067B8"/>
+    <SolidColorBrush x:Key="ShellStatusBarForegroundBrush" Color="#FFFFFF"/>
+
+    <!-- Text -->
+    <SolidColorBrush x:Key="TextBrush" Color="#000000"/>
+    <SolidColorBrush x:Key="TextSecondaryBrush" Color="#4D596A"/>
+    <SolidColorBrush x:Key="TextTertiaryBrush" Color="#888888"/>
+    <SolidColorBrush x:Key="TextDisabledBrush" Color="#AAAAAA"/>
+    <SolidColorBrush x:Key="TextInverseBrush" Color="#FFFFFF"/>
+
+    <!-- Borders -->
+    <SolidColorBrush x:Key="BorderBrush" Color="#CCCCCC"/>
+    <SolidColorBrush x:Key="BorderLightBrush" Color="#DDDDDD"/>
+    <SolidColorBrush x:Key="BorderDarkBrush" Color="#BBBBBB"/>
+    <SolidColorBrush x:Key="BorderAccentBrush" Color="#0078D4"/>
+
+    <!-- Module workspace -->
+    <SolidColorBrush x:Key="ModuleHeaderBackgroundBrush" Color="#0078D4"/>
+    <SolidColorBrush x:Key="ModuleCardBackgroundBrush" Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="ModuleCardBorderBrush" Color="#E0E0E0"/>
+</ResourceDictionary>

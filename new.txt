@@ -1,0 +1,1049 @@
+بدأت الفحص العميق فعلياً على shoutech_erp_v0.1.7.zip، وليس مجرد قراءة أسماء الملفات. راجعت بنية الحل، مشاريع .csproj، ملفات C#، XAML، الخدمات، الإعدادات، الـSQL migrations، الاختبارات، ملفات البناء، والملفات الثنائية.
+
+🔴 الخلاصة التنفيذية
+
+الإصدار v0.1.7 أفضل بكثير من v0.1.6 من ناحية إصلاح أخطاء الـC# القديمة، لكن المشروع حالياً ليس جاهزاً لأقول إنه Build-Ready أو Production-Ready.
+
+أهم ما وجدته:
+
+المستوى	المشكلة	الحالة
+🔴 حرجة	نظام الـSQL Migration غير صالح بصورته الحالية	يجب إصلاحه
+🔴 حرجة	Migration IDs مكررة 002 و003	يجب إعادة ترقيمها
+🔴 حرجة	SqlMigrator لا يستطيع تنفيذ GO و:r	يجب إعادة تصميمه
+🔴 حرجة	001_init.sql ليس SQL فعلياً	يجب استبداله
+🔴 حرجة	002_curr.sql ليس SQL فعلياً	يجب استبداله
+🔴 عالية	cfg/UsrPref.cs نسخة مكررة خارج المشروع	يجب تنظيفها
+🔴 عالية	نظام Themes مكرر: Dark/Light وDk/Lt	يجب توحيده
+🟠 عالية	Services.zip داخل مصدر المشروع	يجب إخراجه
+🟠 عالية	عدة DLL/EXE صفرية	يجب تحديد هل هي placeholders أم binaries ناقصة
+🟠 عالية	وظائف Backup ما زالت TODO/Mock	غير مكتملة
+🟠 عالية	Inventory service يحتوي TODOs لاستعلامات حقيقية	غير مكتمل
+🟠 عالية	Permissions ليست مرتبطة فعلياً بقاعدة البيانات	غير مكتمل
+🟡 متوسطة	DI موجود لكن AppHost يعمل كـService Locator	يحتاج إعادة تنظيم
+🟡 متوسطة	أسماء وإصدارات المشروع غير متناسقة	يحتاج توحيد
+🟡 متوسطة	اختبارات قليلة جداً بالنسبة لحجم ERP	تحتاج توسعة كبيرة
+1. 🏗️ بنية المشروع
+
+المشروع يحتوي حالياً على:
+
+147 ملف C#
+17 ملف XAML
+8 مشاريع .csproj
+Solution واحدة: ShouTech.sln
+
+المشاريع الرئيسية:
+
+ShouTech.sln
+│
+├── cod/app/src/MainApp.csproj
+├── cod/cor/inv.csproj
+│
+├── src/ShouTech.Domain
+├── src/ShouTech.Application
+├── src/ShouTech.Infrastructure
+│
+├── svc
+├── tools/SqlMigrator
+└── tests/Kern.Tests
+الإيجابي
+
+وجود:
+
+Domain
+Application
+Infrastructure
+
+خطوة جيدة جداً نحو Clean Architecture.
+
+لكن التطبيق الرئيسي ما زال يعتمد مباشرة على:
+
+ShouTech.App
+    ↓
+ShouTech.Domain
+ShouTech.Application
+ShouTech.Infrastructure
+ShouTech.Core.Inv
+
+وهذا يجعل الحدود المعمارية غير نظيفة بالكامل.
+
+2. 🔴 أكبر مشكلة: نظام الـMigration
+
+هذه بالنسبة لي أخطر مشكلة في v0.1.7 حالياً.
+
+لديك:
+
+dba/mig/
+├── 001_init.sql
+├── 002_curr.sql
+├── 002_seed_developer_account.sql
+├── 003_accounting_journal.sql
+└── 003_nav_ribbon.sql
+
+أي:
+
+002
+002
+003
+003
+
+وهذا وحده كافٍ لإيقاف نظام Migration محترم.
+
+والأسوأ:
+
+001_init.sql ليس Schema SQL.
+
+يحتوي على نص مثل:
+
+// Path: dba\migrations\001_initialschema.sql
+// Language: SQL Migration
+// Description: أول Schema رسمي.
+
+======================================================================
+
+SHOUTECH ERP V9 - Enterprise System
+Tech Stack:
+...
+
+هذا ليس T-SQL صالحاً.
+
+نفس المشكلة موجودة في 002_curr.sql.
+
+إذن الـMigration الأول والثاني لن ينشئا قاعدة البيانات أصلاً.
+
+3. 🔴 SqlMigrator نفسه فيه مشكلة تصميم خطيرة
+
+البرنامج يفعل:
+
+var files = Directory.GetFiles(migrPath, "*.sql");
+Array.Sort(files);
+
+ثم:
+
+cmd.CommandText = sql;
+await cmd.ExecuteNonQueryAsync();
+
+لكن عندك داخل SQL:
+
+GO
+
+وعندك:
+
+:r "../sys/nav.sql"
+
+وهذان ليسا أوامر SQL Server عادية يمكن إرسالها بواسطة SqlCommand.
+
+GO يفهمه SQLCMD/SSMS كـbatch separator، وليس SQL Server engine.
+
+و:r أمر SQLCMD.
+
+لذلك:
+
+SqlMigrator
+    ↓
+SqlConnection
+    ↓
+ExecuteNonQuery
+
+لن يكون قادراً على تنفيذ هذه migrations كما هي.
+
+الحل الذي أوصي به
+
+نحتاج Migration Engine حقيقي:
+
+MigrationRunner
+│
+├── Discover migrations
+├── Validate sequence
+├── Track applied migrations
+├── Parse GO batches
+├── Resolve :r includes
+├── Execute transactionally
+├── Record checksum
+└── Rollback/failure handling
+
+ومع جدول:
+
+dbo.__SchemaMigrations
+
+مثلاً:
+
+MigrationId
+Name
+AppliedAt
+Checksum
+ExecutionTimeMs
+Success
+
+ولا نعيد تشغيل migration تم تطبيقها.
+
+4. 🔴 مشكلة أمنية في SqlMigrator
+
+يوجد داخل الكود:
+
+Server=localhost;
+Database=SHOUTECH_MST;
+User Id=sa;
+Password=YourStrong!Pass;
+
+صحيح أنها تبدو كلمة مرور placeholder، لكنها لا يجب أن تكون default connection string داخل أداة الإنتاج.
+
+الأفضل:
+
+Environment Variable
+    أو
+Secure Configuration
+    أو
+Windows Authentication
+    أو
+Secret Provider
+
+وفي Development فقط يمكن السماح بقيمة placeholder.
+
+5. 🔴 تكرار UsrPref
+
+لدينا:
+
+cfg/UsrPref.cs
+
+وأيضاً:
+
+cod/app/src/Configuration/UsrPref.cs
+
+والاثنان يعرفان:
+
+namespace ShouTech.App.Configuration;
+
+public sealed class UsrPref
+
+وأيضاً:
+
+UsrPrefJsonContext
+
+النسخة الموجودة في cfg ليست ضمن MainApp.csproj حالياً، لذلك لا تسبب duplicate compile في الوضع الحالي.
+
+لكن وجود نسختين من نفس الـclass خطر صيانة كبير جداً.
+
+والأسوأ أن القيم الافتراضية مختلفة.
+
+نسخة تقول:
+
+Theme = "Dark";
+
+والأخرى:
+
+Theme = "Light";
+
+وهذا سيخلق لاحقاً سلوكاً غامضاً جداً.
+
+قراري
+
+يجب أن يكون لدينا:
+
+ONE UsrPref
+ONE JsonContext
+ONE source of truth
+6. 🔴 نظام Themes مكرر
+
+لدينا:
+
+Themes/
+├── DarkTheme.xaml
+├── LightTheme.xaml
+├── DkTheme.xaml
+├── LtTheme.xaml
+├── ShMenu.xaml
+└── ShRibn.xaml
+
+وفي الكود يوجد:
+
+ThemeService
+
+ويستخدم:
+
+DarkTheme.xaml
+LightTheme.xaml
+
+بينما:
+
+ThmServ
+
+يستخدم:
+
+DkTheme.xaml
+LtTheme.xaml
+
+وAppHost يستخدم:
+
+Theme = new ThmServ();
+
+إذن عملياً التطبيق الحالي يعتمد على:
+
+ThmServ
+    ↓
+DkTheme / LtTheme
+
+بينما ThemeService موجود كمسار بديل.
+
+هذا ازدواج معماري يجب حسمه.
+
+أوصي:
+
+الاحتفاظ بـ:
+
+IThemeService
+ThemeService
+
+وتحويل ThmServ إلى compatibility wrapper مؤقت، ثم حذفه.
+
+7. 🟠 Converters
+
+وجدت شيئاً جيداً وشيئاً يحتاج تنظيف.
+
+لدينا:
+
+BoolToVisibilityConverter.cs
+BoolVis.cs
+
+الأول يحتوي:
+
+BoolToVisibilityConverter
+InverseBoolToVisibilityConverter
+InverseBooleanConverter
+NullToVisibilityConverter
+
+والثاني يحتوي:
+
+BoolVis
+InvBVis
+InvBool
+NullVis
+
+أي لدينا عدة أسماء تقوم تقريباً بنفس الوظائف.
+
+لكن:
+
+InverseBoolToVisibilityConverter.cs
+NullToVisibilityConverter.cs
+
+موجودان كملفات صفرية الحجم.
+
+هذه الملفات لا تسبب duplicate حالياً لأن محتواها فارغ، لكن وجودها مؤشر أن عملية نقل/تنظيف الكود لم تكتمل.
+
+8. 🔴 الملفات الثنائية
+
+وجدت ملفات بحجم صفر:
+
+cod/app/SecEng.dll
+cod/app/auth.exe
+cod/app/lnc.exe
+cod/app/data.dll
+cod/app/prnt.dll
+cod/app/rot.dll
+
+cod/cor/data.dll
+cod/cor/kern.dll
+cod/cor/prnt.dll
+cod/cor/rot.dll
+
+وهذه نقطة مهمة جداً.
+
+خصوصاً:
+
+SecEng.dll
+
+لأن المشروع يتحدث عن:
+
+Dongle
+License
+Hardware ID
+Security Engine
+C++
+
+إذا كانت هذه مجرد placeholders، يجب أن تكون في:
+
+artifacts/
+
+أو يتم توليدها أثناء Build.
+
+أما أن تكون داخل repository بحجم:
+
+0 bytes
+
+فهذا يجعل النظام الأمني غير مكتمل.
+
+9. 🔴 نظام الترخيص غير مكتمل
+
+في:
+
+Services/LicServ.cs
+
+وجدت TODO واضح:
+
+TODO: Call native SecEng (dongle + signature + HWID)
+
+إذن طبقة C# موجودة، لكن الربط الحقيقي مع:
+
+SecEng.dll
+
+ليس مكتملًا.
+
+وهذا مهم لأن التصميم يقول إن النظام Enterprise Licensing.
+
+لكن appset.json حالياً يقول:
+
+"RequireDongle": false,
+"RequireLicense": false
+
+وهذا مناسب للتطوير، لكن يجب ألا يتحول بالخطأ إلى Production configuration.
+
+10. 🔴 Backup غير مكتمل
+
+BkpServ يحتوي الآن على API جيدة:
+
+PerformBackup()
+PerformRotatedBackup()
+RunOnlineBackupCycleAsync()
+TryUploadRotatedBackupsAsync()
+
+وهذا أفضل بكثير من v0.1.6.
+
+لكن داخلها ما زالت TODOs:
+
+تنفيذ النسخ الحقيقي + التشفير AES-256
+فك التشفير + الاستعادة الحقيقية
+
+أي أن الـAPI موجودة لكن التنفيذ Enterprise الحقيقي لم يكتمل.
+
+خصوصاً:
+
+Encrypt
+Compress
+Rotate
+Restore
+Verify integrity
+Cloud upload
+
+هذه يجب أن تكون اختبارات Integration وليس مجرد methods ترجع نتائج.
+
+11. 🟠 Inventory غير مكتمل
+
+InvServ.cs يحتوي على عدة TODOs:
+
+استدعاء المستودع الحقيقي
+استعلام حقيقي
+استعلام حقيقي من قاعدة البيانات
+
+إذن Inventory layer حالياً واجهة/هيكل أكثر من كونها implementation كاملة.
+
+وهذا خطر إذا كان ERP سيعتمد عليها في:
+
+Stock
+Movement
+Valuation
+Warehouse
+Products
+12. 🟠 Permissions غير مكتملة
+
+في:
+
+PermServ.cs
+
+وجدت:
+
+TODO: Load from database (User → Roles → Permissions)
+
+وهذا يعني أن منظومة:
+
+User
+ ↓
+Role
+ ↓
+Permission
+ ↓
+Module
+ ↓
+Action
+
+لم تصبح DB-driven بالكامل بعد.
+
+وبالنسبة لـERP، هذه طبقة أمنية أساسية.
+
+13. 🟢 Auth أصبح أفضل بكثير
+
+هنا توجد أخبار جيدة.
+
+UserInfo يحتوي الآن:
+
+RoleCode
+AccessLevel
+IsSuperAdmin
+
+وهذا يعالج مجموعة من أخطاء v0.1.6 التي ظهرت في remaining_errors.txt.
+
+كذلك:
+
+App.CurrentLanguageCode
+App.SetApplicationLanguage()
+AppServiceHost
+BackupResult
+
+موجودة الآن.
+
+لذلك أخطاء v0.1.6 القديمة لا ينبغي استخدامها للحكم على v0.1.7.
+
+14. 🟢 Password hashing
+
+هذا الجزء من أفضل الأجزاء الحالية.
+
+يوجد:
+
+PBKDF2
+SHA-512
+Salt
+Iterations
+Rehash
+NeedsRehash
+
+والاختبار يتحقق من:
+
+Correct password → true
+Wrong password → false
+
+وهذا جيد.
+
+لكن يجب لاحقاً إضافة اختبارات لـ:
+
+Tampered hash
+Tampered salt
+Invalid format
+Old iteration count
+Null/empty
+Very long password
+Timing behavior
+15. 🔴 مشكلة Migration إضافية: Developer Account
+
+الملف:
+
+002_seed_developer_account.sql
+
+يقول:
+
+Supply these SQLCMD variables at execution time
+
+لكن SqlMigrator لا يدعم SQLCMD variables أصلاً.
+
+إذن هناك تناقض مباشر:
+
+Migration expects SQLCMD
+        ↓
+SqlMigrator uses SqlConnection
+        ↓
+SQLCMD variables unavailable
+
+وهذا يجب إصلاحه.
+
+16. 🔴 تناقض الإصدارات
+
+لدينا داخل المشروع:
+
+Archive:
+v0.1.7
+
+لكن:
+
+MainApp:
+10.6.0
+
+و:
+
+inv:
+10.3.0
+
+والوثائق/SQL تقول:
+
+SHOUTECH ERP V9
+
+وبعض الوثائق تشير إلى:
+
+.NET 9
+
+بينما .csproj يستخدم:
+
+.NET 8
+
+إذن لدينا حالياً:
+
+v0.1.7
+V9
+10.3
+10.6
+.NET 8
+.NET 9
+
+داخل نفس النظام.
+
+يجب أن نضع Version Authority واحدة.
+
+مثلاً:
+
+ProductVersion = 0.1.7
+InternalVersion = 10.6.0
+TargetFramework = net8.0
+
+أو نقرر نظاماً واحداً واضحاً.
+
+17. 🟠 appset.json ضخم جداً بالنسبة لدوره الحالي
+
+الملف يحاول إدارة كل شيء:
+
+Application
+Company
+Database
+Languages
+Currency
+AI
+Logging
+Licensing
+Notifications
+Performance
+Integrations
+Maintenance
+Advanced
+Developer
+ExternalData
+Productivity
+Printing
+Reporting
+MultiCompany
+Barcode
+Tax
+Digitization
+
+هذا ممتاز كـconfiguration model مستقبلي، لكنه حالياً أكبر من implementation الفعلية.
+
+مثلاً يوجد:
+
+PostgreSQL
+Oracle
+MySQL
+SQLite
+
+كم providers مدعومة، لكن .csproj الحالي لا يحتوي حتى على جميع provider packages.
+
+إذن config يقول:
+
+SupportedProviders = 5
+
+والتنفيذ الفعلي أقل.
+
+يجب ألا نعلن provider كـSupported إلا إذا كان:
+
+Package
+Provider
+Repository
+Migration
+Connection
+Tests
+
+موجودة.
+
+18. 🟠 Multi-company
+
+الإعدادات تقول:
+
+"MultiCompany": {
+  "Enabled": true,
+  "MaxCompanies": 1
+}
+
+وفيها:
+
+Company
+Branch
+Database
+DefaultCompanyCode
+
+لكن يجب التأكد أن:
+
+CompanyId
+BranchId
+UserId
+Permissions
+Database
+Session
+Journal
+Inventory
+
+كلها مرتبطة فعلياً بالـTenant/Company Context.
+
+وإلا تصبح MultiCompany مجرد UI/configuration وليست isolation حقيقية.
+
+19. 🟠 Dependency Injection
+
+لدينا DI في:
+
+App.xaml.cs
+
+لكن بالتوازي لدينا:
+
+AppHost
+AppServiceHost
+
+وهما يعملان كـService Locator.
+
+مثلاً:
+
+AppHost.Auth
+AppHost.Backup
+AppHost.Navigation
+
+بينما لدينا أيضاً:
+
+IServiceProvider
+
+داخل App.
+
+هذا يعني أن المشروع يستخدم نموذجين:
+
+Dependency Injection
++
+Service Locator
+
+وهذا يزيد الترابط.
+
+الهدف النهائي
+
+يجب أن تصبح:
+
+ViewModel
+   ↓
+Constructor Injection
+   ↓
+Interface
+   ↓
+Implementation
+
+بدلاً من:
+
+ViewModel
+   ↓
+AppHost
+   ↓
+Global Service
+20. 🟢 WPF startup
+
+هنا لاحظت معالجة جيدة لمشكلة كانت موجودة في النسخة السابقة.
+
+تم استخدام:
+
+ShutdownMode = ShutdownMode.OnExplicitShutdown;
+
+أثناء startup.
+
+ثم:
+
+Language
+ ↓
+Splash
+ ↓
+Company
+ ↓
+Login
+ ↓
+Main
+
+وهذا التصميم أفضل بكثير من الاعتماد على OnLastWindowClose أثناء مراحل البداية.
+
+21. 🟠 لكن يوجد تعقيد زائد في Window lifecycle
+
+حالياً:
+
+App.MainWindow
+Splash
+Company
+Login
+MWin
+
+يتم تبديل MainWindow يدوياً عدة مرات.
+
+هذا قابل للعمل، لكن يجب وضع:
+
+WindowNavigationCoordinator
+
+أو:
+
+StartupCoordinator
+
+بدلاً من توزيع إدارة دورة الحياة بين:
+
+App
+ComWin
+SplWin
+LogWin
+StpWiz
+22. 🧪 الاختبارات
+
+حالياً يوجد مشروع:
+
+Kern.Tests
+
+وهذا ممتاز.
+
+لكن عدد الاختبارات ما زال صغيراً جداً مقارنة بحجم النظام.
+
+الموجود حالياً يغطي بشكل جيد نسبياً:
+
+Password hashing
+Journal balancing
+Journal posting/reversal
+Preferences normalization
+Converter
+
+لكن لا يوجد تغطية كافية لـ:
+
+Authentication
+Company isolation
+Permissions
+Backup
+Restore
+Licensing
+Localization
+RTL
+Navigation
+Database health
+Migration
+Inventory
+Multi-company
+23. 🔴 اختبار مهم يجب إضافته
+
+يجب أن نصل إلى مرحلة:
+
+dotnet test
+
+ويكون لدينا tests على الأقل لـ:
+
+Domain
+Company
+User
+Role
+Permission
+JournalEntry
+FYear
+License
+Application
+JournalService
+CompanyService
+UserService
+LicenseService
+Infrastructure
+DatabaseHealth
+Repository
+Migration
+App
+Authentication
+Localization
+Preferences
+Backup
+Permissions
+24. 🟠 ملفات المشروع نفسها تحتاج تنظيف
+
+داخل repository يوجد:
+
+Services.zip
+
+وهذا غريب جداً داخل:
+
+cod/app/src/
+
+أي أن source tree يحتوي archive داخله.
+
+كذلك:
+
+scr.py
+expanded.xml
+
+وعدة scripts مؤقتة.
+
+يجب فصل:
+
+src/
+tools/
+scripts/
+artifacts/
+docs/
+archive/
+25. 🟠 ملفات Build
+
+build.ps1 ما زال يقول:
+
+Install .NET SDK (7.0 or 9.0)
+
+بينما المشروع:
+
+net8.0
+net8.0-windows
+
+وهذا تناقض.
+
+يجب أن يصبح:
+
+.NET 8 SDK
+
+إذا كان القرار النهائي هو .NET 8.
+
+26. 🟠 أهم مشكلة هندسية أراها
+
+المشروع يبدو وكأنه مرّ بعدة عمليات ترحيل/إعادة تسمية/إصلاح تدريجي.
+
+الدليل:
+
+DkTheme / DarkTheme
+LtTheme / LightTheme
+
+AppPrefs / AppPreferences
+AppSetng / AppSettings
+AppCfgSvc / AppConfigService
+
+Loc
+LocSvc
+LocalizationService
+
+UsrPref duplicate
+
+RibModMap
+RibbonModuleMapper
+
+MainWnVM
+MainShVM
+
+هذا لا يعني أن الكود سيئ.
+
+بل يعني أن المشروع في منتصف Refactoring كبير.
+
+وهذا بالضبط ما يجب أن نعالجه الآن.
+
+🏆 تقييمي الحالي لـ v0.1.7
+
+تقريباً:
+
+Architecture       7/10
+WPF UI             7/10
+Domain             7/10
+Security design    6/10
+Authentication     7/10
+Localization       7/10
+Backup             4/10
+Inventory          4/10
+Permissions        5/10
+Database/Migration 2/10
+Testing            4/10
+Build discipline   5/10
+Production ready   3/10
+
+لكن هذا ليس حكماً نهائياً على المشروع؛ لأنني لم أستطع تنفيذ dotnet build فعلياً في بيئة الفحص الحالية لعدم وجود .NET SDK هنا. لذلك لن أدّعي أن المشروع يبني أو لا يبني دون اختبار حقيقي.
+
+🎯 ترتيب الإصلاح الذي أوصي به
+
+لا أنصح بأن نبدأ بتعديل الواجهات الآن.
+
+الترتيب الصحيح عندي هو:
+
+PHASE 1
+████████████████████
+Build Integrity
+
+ثم:
+
+PHASE 2
+████████████████████
+Database / Migration
+
+ثم:
+
+PHASE 3
+████████████████████
+Architecture Cleanup
+
+ثم:
+
+PHASE 4
+████████████████████
+Security / Licensing / Permissions
+
+ثم:
+
+PHASE 5
+████████████████████
+Backup / Recovery
+
+ثم:
+
+PHASE 6
+████████████████████
+Inventory / Accounting
+
+ثم:
+
+PHASE 7
+████████████████████
+Tests
+
+ثم:
+
+PHASE 8
+████████████████████
+Production / Packaging
+والأهم
+
+لا أريد أن نصلح 40 خطأ بشكل عشوائي.
+
+أرى أن أول مهمة حقيقية يجب أن تكون:
+
+إنشاء "Build Baseline" لـ v0.1.7، ثم استخراج جميع أخطاء C# وXAML الحقيقية من المشروع الحالي، وفصلها عن أخطاء v0.1.6 القديمة.
+
+بعدها ننتقل مباشرة إلى إصلاح الـMigration Engine.
+
+لأن remaining_errors.txt الموجود في الأرشيف قديم ويخص v0.1.6، وبالتالي الاعتماد عليه الآن سيقودنا إلى إصلاح أشياء تم إصلاحها بالفعل في v0.1.7.
+
+ابدأ العمل على الاصلاحات 
+
+تم يا مانشو. بدأت الإصلاحات فعلياً، ولم أكتفِ بالتقرير.
+
+ما تم إصلاحه في الدفعة الأولى
+إصلاح Migration baseline بالكامل:
+001_initial_install.sql أصبح يشغّل الـinstaller الرسمي.
+إزالة الـmigrations المكررة/المتعارضة من المسار التنفيذي.
+نقل Developer Seed إلى dba/seed.
+إعادة بناء SqlMigrator ليعالج:
+GO
+:r
+:setvar
+تتبع الـmigrations
+SHA-256 لكل migration
+Bootstrap عبر master لإنشاء قاعدة البيانات.
+إزالة مسارات SQL Server المحلية الثابتة مثل C:\SHOUTECH\....
+إصلاح 355 حالة من صيغة CREATE INDEX IF NOT EXISTS غير الصالحة في SQL Server.
+إصلاح مشكلة MST.dbo.* التي كانت تشير إلى قاعدة/مخطط غير متسق، وتوحيدها مع قاعدة المشروع الحالية.
+إزالة أغلفة TRY/CATCH + TRANSACTION التي كانت تمتد عبر GO وتنتج batches غير صالحة في SQL Server.
+إصلاح Seed الخاص بـ Chart of Accounts ليصبح idempotent ولا يفشل إذا لم توجد شركة بعد.
+إصلاح HR Seed ليستخرج CompanyID من قاعدة البيانات بدلاً من متغير SQLCMD مفقود.
+تنظيف migrations القديمة المتعارضة ووضعها في archive.
+تنظيف ملفات bin/obj والـexpanded.xml الناتجة من builds سابقة.
+فحص الاتساق بعد الإصلاح
+
+الـinstaller أصبح يحتوي على:
+
+81 ملف SQL/SYS مترابط
+0 include مفقود
+0 SQLCMD directives غير معالجة
+0 CREATE INDEX IF NOT EXISTS
+0 BEGIN TRY/CATCH عابر لـGO
+0 متغيرات $(...) غير محلولة
+
+ملاحظة مهمة: لا أستطيع تنفيذ dotnet build أو اختبار SQL Server فعلياً داخل بيئة الفحص الحالية لأن .NET SDK وSQL Server غير متاحين هنا. لذلك هذه المرحلة هي Static/Structural Repair وليست ادعاءً بأن Build/Database deployment نجح فعلياً.
+
+النسخة المعدلة
+
+تحميل ShouTech ERP v0.1.7 — النسخة بعد الإصلاحات
+
+الخطوة التالية التي سأركز عليها: فحص كود C#/XAML نفسه واستخراج وإصلاح أخطاء References / Namespaces / ViewModels / Services / DI / XAML Code-behind، ثم تجهيز المشروع بحيث تكون نتيجة dotnet build على جهازك أقرب ما يمكن إلى Build نظيف.

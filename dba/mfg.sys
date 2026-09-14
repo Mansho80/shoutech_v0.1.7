@@ -1,0 +1,13 @@
+-- ═════════════════════════════════════════════════════════════════════════════════
+-- FILE: dba/mfg.sys
+-- SYSTEM: ShouTech ERP Enterprise Core
+-- MODULE: Manufacturing · BOM · Routing · Work Orders · Quality
+-- GRADE: Enterprise Production Standard (Tier-1)
+-- ═════════════════════════════════════════════════════════════════════════════════
+
+:r mfg/mfg.sql
+:r mfg/bom.sql
+:r mfg/route.sql
+:r mfg/wo.sql
+:r mfg/qual.sql
+GO
